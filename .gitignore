@@ -1,0 +1,16 @@
+# Python
+.venv/
+__pycache__/
+
+# Secrets
+.env
+
+# Uploaded student files
+backend/uploads/
+
+# Frontend
+node_modules/
+dist/
+
+# PyCharm settings
+.idea/
