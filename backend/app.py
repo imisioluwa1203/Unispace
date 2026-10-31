@@ -8,6 +8,7 @@ from flask_jwt_extended import JWTManager
 
 from auth import auth_bp
 from models import db, User
+from library import library_bp
 
 load_dotenv()
 
@@ -27,6 +28,7 @@ app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=7)
 db.init_app(app)
 JWTManager(app)
 app.register_blueprint(auth_bp)
+app.register_blueprint(library_bp)
 
 with app.app_context():
     db.create_all()

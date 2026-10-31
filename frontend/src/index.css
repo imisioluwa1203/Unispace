@@ -73,3 +73,22 @@ button:disabled { opacity: .6; }
 @keyframes highlight { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: 600; }
+.topbar .link { width: auto; margin: 0; padding: 6px 10px; }
+
+.upload-btn {
+  display: block; text-align: center; padding: 12px; border-radius: 12px;
+  background: #ffd43b; color: #1a2a44; font-weight: 700; cursor: pointer;
+  transition: transform .15s;
+}
+.upload-btn:hover { transform: translateY(-2px); }
+
+.doc-list { list-style: none; margin: 16px 0 0; padding: 0; }
+.doc-list li {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid #dbe7fb; animation: slideUp .4s ease both;
+}
+.doc-list strong { word-break: break-word; }
+.doc-list small { display: block; color: #5a6b88; }
+.delete { width: auto; margin: 0; padding: 6px 12px; background: #ffe8e8; color: #b00020; font-size: 14px; }

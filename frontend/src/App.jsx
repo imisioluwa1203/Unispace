@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import "./index.css";
 import { api, getToken, clearToken } from "./api";
+import Floaters from "./Floaters";
 import Signup from "./Signup";
 import Login from "./Login";
 import Profile from "./Profile";
-import Floaters from "../Floaters.jsx";
-
+import Library from "./Library";
 
 export default function App() {
   const [screen, setScreen] = useState("login");
@@ -17,7 +17,7 @@ export default function App() {
     api("/api/auth/me")
       .then((data) => {
         setUser(data.user || data);
-        setScreen("profile");
+        setScreen("library");
       })
       .catch(() => clearToken())
       .finally(() => setChecking(false));
@@ -25,7 +25,7 @@ export default function App() {
 
   function handleAuth(newUser) {
     setUser(newUser);
-    setScreen("profile");
+    setScreen("library");
   }
 
   function logout() {
@@ -34,13 +34,17 @@ export default function App() {
     setScreen("login");
   }
 
-    let screenView;
+  let screenView;
   if (checking) {
     screenView = <div className="screen"><p>Loading...</p></div>;
   } else if (screen === "signup") {
     screenView = <Signup onAuth={handleAuth} goLogin={() => setScreen("login")} />;
+  } else if (screen === "library" && user) {
+    screenView = <Library user={user} goProfile={() => setScreen("profile")} />;
   } else if (screen === "profile" && user) {
-    screenView = <Profile user={user} onUpdate={setUser} onLogout={logout} />;
+    screenView = (
+      <Profile user={user} onUpdate={setUser} onLogout={logout} goLibrary={() => setScreen("library")} />
+    );
   } else {
     screenView = <Login onAuth={handleAuth} goSignup={() => setScreen("signup")} />;
   }

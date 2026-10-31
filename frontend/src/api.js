@@ -11,7 +11,10 @@ export function clearToken() {
 }
 
 export async function api(path, options = {}) {
-  const headers = { "Content-Type": "application/json" };
+  const headers = {};
+  if (!(options.body instanceof FormData)) {
+     headers["Content-Type"] = "application/json";
+}
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { api } from "./api";
 
-export default function Profile({ user, onUpdate, onLogout }) {
+export default function Profile({ user, onUpdate, onLogout, goLibrary }) {
   const [form, setForm] = useState({
     full_name: user.full_name,
     level: user.level,
@@ -49,6 +49,7 @@ export default function Profile({ user, onUpdate, onLogout }) {
         {message && <div className="ok">{message}</div>}
         {error && <div className="error">{error}</div>}
         <button>Save changes</button>
+         <button type="button" className="link" onClick={goLibrary}>Back to library</button>
         <button type="button" className="link" onClick={onLogout}>Log out</button>
       </form>
     </div>
