@@ -25,3 +25,12 @@ export async function api(path, options = {}) {
   }
   return data;
 }
+
+export async function apiFile(path) {
+  const token = getToken();
+  const response = await fetch(`${API_URL}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!response.ok) throw new Error("Could not open this PDF.");
+  return response.arrayBuffer();
+}

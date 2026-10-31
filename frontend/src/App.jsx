@@ -6,10 +6,12 @@ import Signup from "./Signup";
 import Login from "./Login";
 import Profile from "./Profile";
 import Library from "./Library";
+import Reader from "./Reader";
 
 export default function App() {
   const [screen, setScreen] = useState("login");
   const [user, setUser] = useState(null);
+  const [currentDoc, setCurrentDoc] = useState(null);
   const [checking, setChecking] = useState(Boolean(getToken()));
 
   useEffect(() => {
@@ -28,9 +30,15 @@ export default function App() {
     setScreen("library");
   }
 
+  function openDoc(doc) {
+    setCurrentDoc(doc);
+    setScreen("reader");
+  }
+
   function logout() {
     clearToken();
     setUser(null);
+    setCurrentDoc(null);
     setScreen("login");
   }
 
@@ -40,7 +48,9 @@ export default function App() {
   } else if (screen === "signup") {
     screenView = <Signup onAuth={handleAuth} goLogin={() => setScreen("login")} />;
   } else if (screen === "library" && user) {
-    screenView = <Library user={user} goProfile={() => setScreen("profile")} />;
+    screenView = <Library user={user} goProfile={() => setScreen("profile")} openDoc={openDoc} />;
+  } else if (screen === "reader" && currentDoc) {
+    screenView = <Reader doc={currentDoc} onBack={() => setScreen("library")} />;
   } else if (screen === "profile" && user) {
     screenView = (
       <Profile user={user} onUpdate={setUser} onLogout={logout} goLibrary={() => setScreen("library")} />

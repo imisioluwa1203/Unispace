@@ -92,3 +92,31 @@ button:disabled { opacity: .6; }
 .doc-list strong { word-break: break-word; }
 .doc-list small { display: block; color: #5a6b88; }
 .delete { width: auto; margin: 0; padding: 6px 12px; background: #ffe8e8; color: #b00020; font-size: 14px; }
+
+.doc-open {
+  flex: 1; width: auto; margin: 0; padding: 0; border-radius: 0;
+  background: none; color: inherit; text-align: left; font-weight: 400; font-size: 16px;
+}
+.doc-open strong { color: #1f6feb; }
+.doc-open:hover:not(:disabled) { transform: none; box-shadow: none; }
+
+.screen.reader { max-width: 760px; }
+.reader-title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-left: 12px; }
+
+.page-wrap {
+  background: #fff; border-radius: 12px; overflow: hidden; min-height: 120px;
+  box-shadow: 0 6px 18px rgba(31, 111, 235, .18);
+}
+.page-wrap p { padding: 20px; }
+.page-wrap canvas { width: 100%; height: auto; }
+
+.reader-bar {
+  position: sticky; bottom: 12px; margin-top: 12px; padding: 10px;
+  display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
+  background: #fff; border-radius: 14px; box-shadow: 0 4px 14px rgba(31, 111, 235, .25);
+}
+.reader-bar button { width: auto; margin: 0; padding: 8px 14px; }
+.reader-bar button:disabled { opacity: .4; }
+.reader-bar form { display: flex; gap: 6px; align-items: center; }
+.reader-bar input { width: 90px; padding: 8px; }
+.reader-bar form button { background: #ffd43b; color: #1a2a44; }

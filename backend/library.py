@@ -1,6 +1,6 @@
 import os
 import uuid
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_from_directory
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Document
 from auth import error
@@ -59,3 +59,34 @@ def delete_document(doc_id):
     db.session.delete(doc)
     db.session.commit()
     return jsonify({"message": "Deleted"})
+
+@library_bp.route("/<int:doc_id>/file", methods=["GET"])
+@jwt_required()
+def get_file(doc_id):
+    user_id = int(get_jwt_identity())
+    doc = Document.query.filter_by(id=doc_id, user_id=user_id).first()
+    if doc is None:
+        return error("Document not found.", 404)
+    return send_from_directory(UPLOAD_FOLDER, doc.stored_name, mimetype="application/pdf")
+
+
+@library_bp.route("/<int:doc_id>/progress", methods=["PATCH"])
+@jwt_required()
+def save_progress(doc_id):
+    user_id = int(get_jwt_identity())
+    doc = Document.query.filter_by(id=doc_id, user_id=user_id).first()
+    if doc is None:
+        return error("Document not found.", 404)
+
+    data = request.get_json(silent=True) or {}
+    total = data.get("total_pages")
+    page = data.get("last_page")
+    if not isinstance(total, int) or total < 1:
+        return error("Invalid total pages.", 400)
+    if not isinstance(page, int) or page < 1 or page > total:
+        return error("Invalid page number.", 400)
+
+    doc.total_pages = total
+    doc.last_page = page
+    db.session.commit()
+    return jsonify({"document": doc.to_dict()})
