@@ -2,13 +2,16 @@ import { useState, useEffect, useRef } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { api, apiFile } from "./api";
+import { getCachedPdf, savePdfToCache, loadData, saveData, removeData, docKey } from "./offline";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
 
 export default function Reader({ doc, onBack }) {
+  const key = docKey(doc);
+  const notesKey = `notes_${key}`;
   const [pdf, setPdf] = useState(null);
   const [numPages, setNumPages] = useState(0);
-  const [pageNum, setPageNum] = useState(doc.last_page || 1);
+  const [pageNum, setPageNum] = useState(() => loadData(`page_${key}`) || doc.last_page || 1);
   const [jump, setJump] = useState("");
   const [error, setError] = useState("");
   const [notes, setNotes] = useState([]);
@@ -17,24 +20,36 @@ export default function Reader({ doc, onBack }) {
   const wrapRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // 1. Download the PDF and open it (once)
+  // 1. Open the PDF: from this device if saved, otherwise download it once and save it
   useEffect(() => {
     let cancelled = false;
-    apiFile(`/api/library/${doc.id}/file`)
-      .then((buffer) => pdfjsLib.getDocument({ data: buffer }).promise)
-      .then((loaded) => {
+    async function load() {
+      try {
+        let buffer = await getCachedPdf(doc);
+        if (!buffer) {
+          buffer = await apiFile(`/api/library/${doc.id}/file`);
+          await savePdfToCache(doc, buffer);
+        }
+        const loaded = await pdfjsLib.getDocument({ data: buffer }).promise;
         if (cancelled) return;
         setPdf(loaded);
         setNumPages(loaded.numPages);
         setPageNum((p) => Math.min(Math.max(p, 1), loaded.numPages));
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err.message || "Could not open this PDF.");
-      });
+      } catch (err) {
+        if (!cancelled) {
+          setError(
+            err.offline
+              ? "This PDF is not saved on your device yet. Connect to the internet and open it once."
+              : err.message || "Could not open this PDF."
+          );
+        }
+      }
+    }
+    load();
     return () => {
       cancelled = true;
     };
-  }, [doc.id]);
+  }, [doc]);
 
   // 2. Draw the current page whenever the page number changes
   useEffect(() => {
@@ -61,22 +76,34 @@ export default function Reader({ doc, onBack }) {
     };
   }, [pdf, pageNum]);
 
-  // 3. Save where the student stopped
+  // 3. Save where the student stopped (kept on the device if offline, synced later)
   useEffect(() => {
     if (!pdf) return;
     api(`/api/library/${doc.id}/progress`, {
       method: "PATCH",
       body: JSON.stringify({ last_page: pageNum, total_pages: numPages }),
-    }).catch(() => {});
-  }, [pdf, pageNum, numPages, doc.id]);
+    })
+      .then(() => removeData(`page_${key}`))
+      .catch((err) => {
+        if (err.offline) saveData(`page_${key}`, pageNum);
+      });
+  }, [pdf, pageNum, numPages, doc.id, key]);
 
-    useEffect(() => {
+  // 4. Notes: show the saved copy at once, then refresh from the server
+  useEffect(() => {
+    const savedNotes = loadData(notesKey);
+    if (savedNotes) setNotes(savedNotes);
     api(`/api/library/${doc.id}/notes`)
-      .then((data) => setNotes(data.notes))
-      .catch(() => setNoteError("Could not load notes."));
-  }, [doc.id]);
+      .then((data) => {
+        setNotes(data.notes);
+        saveData(notesKey, data.notes);
+      })
+      .catch((err) => {
+        if (!err.offline) setNoteError("Could not load notes.");
+      });
+  }, [doc.id, notesKey]);
 
-    const pageNotes = notes.filter((n) => n.page === pageNum);
+  const pageNotes = notes.filter((n) => n.page === pageNum);
 
   async function addNote(e) {
     e.preventDefault();
@@ -86,10 +113,12 @@ export default function Reader({ doc, onBack }) {
         method: "POST",
         body: JSON.stringify({ page: pageNum, content: noteText }),
       });
-      setNotes([...notes, data.note]);
+      const updated = [...notes, data.note];
+      setNotes(updated);
+      saveData(notesKey, updated);
       setNoteText("");
     } catch (err) {
-      setNoteError(err.message);
+      setNoteError(err.offline ? "You are offline, so this note was not saved. Try again with internet." : err.message);
     }
   }
 
@@ -98,9 +127,11 @@ export default function Reader({ doc, onBack }) {
     setNoteError("");
     try {
       await api(`/api/library/${doc.id}/notes/${id}`, { method: "DELETE" });
-      setNotes(notes.filter((n) => n.id !== id));
+      const updated = notes.filter((n) => n.id !== id);
+      setNotes(updated);
+      saveData(notesKey, updated);
     } catch (err) {
-      setNoteError(err.message);
+      setNoteError(err.offline ? "You are offline, so this note was not deleted." : err.message);
     }
   }
 
@@ -110,13 +141,6 @@ export default function Reader({ doc, onBack }) {
     if (n >= 1 && n <= numPages) setPageNum(n);
     setJump("");
   }
-
-    // 4. Load the notes for this PDF (once)
-  useEffect(() => {
-    api(`/api/library/${doc.id}/notes`)
-      .then((data) => setNotes(data.notes))
-      .catch(() => setNoteError("Could not load notes."));
-  }, [doc.id]);
 
   return (
     <div className="screen reader">
@@ -131,6 +155,7 @@ export default function Reader({ doc, onBack }) {
         {!pdf && !error && <p>Opening PDF...</p>}
         <canvas ref={canvasRef} style={{ display: pdf ? "block" : "none" }} />
       </div>
+
       {pdf && (
         <div className="card notes-card">
           <h2>Notes on page {pageNum}</h2>
@@ -156,6 +181,7 @@ export default function Reader({ doc, onBack }) {
           </ul>
         </div>
       )}
+
       {pdf && (
         <div className="reader-bar">
           <button disabled={pageNum <= 1} onClick={() => setPageNum(pageNum - 1)}>◀</button>
@@ -170,7 +196,6 @@ export default function Reader({ doc, onBack }) {
               value={jump}
               onChange={(e) => setJump(e.target.value)}
             />
-
             <button>Go</button>
           </form>
         </div>

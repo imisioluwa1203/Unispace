@@ -131,3 +131,8 @@ textarea:focus { outline: none; border-color: #1f6feb; box-shadow: 0 0 0 3px rgb
 .notes-card form button { background: #ffd43b; color: #1a2a44; }
 .muted { color: #5a6b88; }
 .note-text { flex: 1; white-space: pre-wrap; word-break: break-word; }
+
+.offline-bar {
+  position: sticky; top: 0; z-index: 5; padding: 8px 12px; text-align: center;
+  background: #ffd43b; color: #1a2a44; font-weight: 600; font-size: 14px;
+}

@@ -7,12 +7,14 @@ import Login from "./Login";
 import Profile from "./Profile";
 import Library from "./Library";
 import Reader from "./Reader";
+import { clearOffline, useOnline } from "./offline";
 
 export default function App() {
   const [screen, setScreen] = useState("login");
   const [user, setUser] = useState(null);
   const [currentDoc, setCurrentDoc] = useState(null);
   const [checking, setChecking] = useState(Boolean(getToken()));
+  const online = useOnline();
 
   useEffect(() => {
     if (!getToken()) return;
@@ -40,6 +42,7 @@ export default function App() {
     setUser(null);
     setCurrentDoc(null);
     setScreen("login");
+    clearOffline()
   }
 
   let screenView;
@@ -62,6 +65,9 @@ export default function App() {
   return (
     <>
       <Floaters />
+      {!online && (
+          <div className="offline-bar"> You are offline. PDFs saved on this device still open.</div>
+      )}
       {screenView}
     </>
   );
