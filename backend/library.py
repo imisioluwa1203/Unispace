@@ -2,7 +2,7 @@ import os
 import uuid
 from flask import Blueprint, request, jsonify, send_from_directory
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models import db, Document
+from models import db, Document, Note
 from auth import error
 
 library_bp = Blueprint("library", __name__, url_prefix="/api/library")
@@ -56,6 +56,7 @@ def delete_document(doc_id):
     path = os.path.join(UPLOAD_FOLDER, doc.stored_name)
     if os.path.exists(path):
         os.remove(path)
+    Note.query.filter_by(document_id=doc_id).delete()
     db.session.delete(doc)
     db.session.commit()
     return jsonify({"message": "Deleted"})
@@ -90,3 +91,58 @@ def save_progress(doc_id):
     doc.last_page = page
     db.session.commit()
     return jsonify({"document": doc.to_dict()})
+def get_owned_doc(doc_id):
+    user_id = int(get_jwt_identity())
+    return Document.query.filter_by(id=doc_id, user_id=user_id).first()
+
+
+@library_bp.route("/<int:doc_id>/notes", methods=["GET"])
+@jwt_required()
+def list_notes(doc_id):
+    doc = get_owned_doc(doc_id)
+    if doc is None:
+        return error("Document not found.", 404)
+    notes = Note.query.filter_by(document_id=doc.id).order_by(Note.page, Note.created_at).all()
+    return jsonify({"notes": [n.to_dict() for n in notes]})
+
+@library_bp.route("/<int:doc_id>/notes", methods=["POST"])
+@jwt_required()
+def add_note(doc_id):
+    doc = get_owned_doc(doc_id)
+    if doc is None:
+        return error("Document not found.", 404)
+
+    data = request.get_json(silent=True) or {}
+    page = data.get("page")
+    content = (data.get("content") or "").strip()
+    if not isinstance(page, int) or page < 1 or (doc.total_pages and page > doc.total_pages):
+        return error("Invalid page number.", 400)
+    if not content:
+        return error("Please write something first.", 400)
+    if len(content) > 2000:
+        return error("Notes can be at most 2000 characters.", 400)
+
+    note = Note(
+        user_id=doc.user_id,
+        document_id=doc.id,
+        title=content[:60],
+        body=content,
+        page=page,
+    )
+    db.session.add(note)
+    db.session.commit()
+    return jsonify({"note": note.to_dict()}), 201
+
+
+@library_bp.route("/<int:doc_id>/notes/<int:note_id>", methods=["DELETE"])
+@jwt_required()
+def delete_note(doc_id, note_id):
+    doc = get_owned_doc(doc_id)
+    if doc is None:
+        return error("Document not found.", 404)
+    note = Note.query.filter_by(id=note_id, document_id=doc.id).first()
+    if note is None:
+        return error("Note not found.", 404)
+    db.session.delete(note)
+    db.session.commit()
+    return jsonify({"message": "Deleted"})

@@ -11,6 +11,9 @@ export default function Reader({ doc, onBack }) {
   const [pageNum, setPageNum] = useState(doc.last_page || 1);
   const [jump, setJump] = useState("");
   const [error, setError] = useState("");
+  const [notes, setNotes] = useState([]);
+  const [noteText, setNoteText] = useState("");
+  const [noteError, setNoteError] = useState("");
   const wrapRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -67,12 +70,53 @@ export default function Reader({ doc, onBack }) {
     }).catch(() => {});
   }, [pdf, pageNum, numPages, doc.id]);
 
+    useEffect(() => {
+    api(`/api/library/${doc.id}/notes`)
+      .then((data) => setNotes(data.notes))
+      .catch(() => setNoteError("Could not load notes."));
+  }, [doc.id]);
+
+    const pageNotes = notes.filter((n) => n.page === pageNum);
+
+  async function addNote(e) {
+    e.preventDefault();
+    setNoteError("");
+    try {
+      const data = await api(`/api/library/${doc.id}/notes`, {
+        method: "POST",
+        body: JSON.stringify({ page: pageNum, content: noteText }),
+      });
+      setNotes([...notes, data.note]);
+      setNoteText("");
+    } catch (err) {
+      setNoteError(err.message);
+    }
+  }
+
+  async function removeNote(id) {
+    if (!window.confirm("Delete this note?")) return;
+    setNoteError("");
+    try {
+      await api(`/api/library/${doc.id}/notes/${id}`, { method: "DELETE" });
+      setNotes(notes.filter((n) => n.id !== id));
+    } catch (err) {
+      setNoteError(err.message);
+    }
+  }
+
   function goTo(e) {
     e.preventDefault();
     const n = parseInt(jump, 10);
     if (n >= 1 && n <= numPages) setPageNum(n);
     setJump("");
   }
+
+    // 4. Load the notes for this PDF (once)
+  useEffect(() => {
+    api(`/api/library/${doc.id}/notes`)
+      .then((data) => setNotes(data.notes))
+      .catch(() => setNoteError("Could not load notes."));
+  }, [doc.id]);
 
   return (
     <div className="screen reader">
@@ -87,7 +131,31 @@ export default function Reader({ doc, onBack }) {
         {!pdf && !error && <p>Opening PDF...</p>}
         <canvas ref={canvasRef} style={{ display: pdf ? "block" : "none" }} />
       </div>
-
+      {pdf && (
+        <div className="card notes-card">
+          <h2>Notes on page {pageNum}</h2>
+          <form onSubmit={addNote}>
+            <textarea
+              rows={3}
+              maxLength={2000}
+              placeholder="Write a note for this page..."
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+            />
+            <button disabled={!noteText.trim()}>Add note</button>
+          </form>
+          {noteError && <div className="error">{noteError}</div>}
+          {pageNotes.length === 0 && <p className="muted">No notes on this page yet.</p>}
+          <ul className="doc-list">
+            {pageNotes.map((n) => (
+              <li key={n.id}>
+                <span className="note-text">{n.body}</span>
+                <button className="delete" onClick={() => removeNote(n.id)}>Delete</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {pdf && (
         <div className="reader-bar">
           <button disabled={pageNum <= 1} onClick={() => setPageNum(pageNum - 1)}>◀</button>
@@ -102,6 +170,7 @@ export default function Reader({ doc, onBack }) {
               value={jump}
               onChange={(e) => setJump(e.target.value)}
             />
+
             <button>Go</button>
           </form>
         </div>

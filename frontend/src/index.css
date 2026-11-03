@@ -120,3 +120,14 @@ button:disabled { opacity: .6; }
 .reader-bar form { display: flex; gap: 6px; align-items: center; }
 .reader-bar input { width: 90px; padding: 8px; }
 .reader-bar form button { background: #ffd43b; color: #1a2a44; }
+
+textarea {
+  width: 100%; padding: 10px; border: 1px solid #c8d6ee; border-radius: 10px;
+  font-size: 16px; font-family: inherit; box-sizing: border-box; background: #fff; resize: vertical;
+}
+textarea:focus { outline: none; border-color: #1f6feb; box-shadow: 0 0 0 3px rgba(255, 212, 59, .6); }
+
+.notes-card { margin-top: 16px; }
+.notes-card form button { background: #ffd43b; color: #1a2a44; }
+.muted { color: #5a6b88; }
+.note-text { flex: 1; white-space: pre-wrap; word-break: break-word; }
