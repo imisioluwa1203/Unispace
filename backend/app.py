@@ -16,7 +16,7 @@ APP_NAME = "Unispace"
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:5173", "http://127.0.0.1:5173"])
+CORS(app, origins=["http://localhost:5173", "http://127.0.0.1:5173","http://localhost:4173", "http://127.0.0.1:4173"])
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL") or (
     "sqlite:///" + os.path.join(BASE_DIR, "unispace.db")

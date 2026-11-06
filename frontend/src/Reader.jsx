@@ -146,7 +146,7 @@ export default function Reader({ doc, onBack }) {
     <div className="screen reader">
       <h1>Unispace</h1>
       <div className="topbar">
-        <button className="link" onClick={onBack}>← Library</button>
+        <button className="link" onClick={onBack}>← Back</button>
         <span className="reader-title">{doc.title}</span>
       </div>
 

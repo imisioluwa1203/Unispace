@@ -43,6 +43,7 @@ class Document(db.Model):
     last_page = db.Column(db.Integer, default=1)
     total_pages = db.Column(db.Integer)
     created_at = db.Column(db.DateTime(timezone=True), default=now)
+    last_opened_at = db.Column(db.DateTime(timezone=True))
 
     notes = db.relationship("Note", backref="document")
 
@@ -54,6 +55,7 @@ class Document(db.Model):
             "last_page": self.last_page,
             "total_pages": self.total_pages,
             "created_at": self.created_at.isoformat() if self.created_at else None,
+            "last_opened_at": self.last_opened_at.isoformat() if self.last_opened_at else None,
         }
 
 

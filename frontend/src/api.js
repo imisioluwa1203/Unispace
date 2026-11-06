@@ -1,13 +1,15 @@
 const API_URL = "http://127.0.0.1:5000"; // same address as before
 
-export function saveToken(token) {
-  localStorage.setItem("unispace_token", token);
+export function saveToken(token, remember = true) {
+  clearToken();
+  (remember ? localStorage : sessionStorage).setItem("unispace_token", token);
 }
 export function getToken() {
-  return localStorage.getItem("unispace_token");
+  return localStorage.getItem("unispace_token") || sessionStorage.getItem("unispace_token");
 }
 export function clearToken() {
   localStorage.removeItem("unispace_token");
+  sessionStorage.removeItem("unispace_token");
 }
 
 function offlineError() {

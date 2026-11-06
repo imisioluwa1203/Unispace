@@ -1,5 +1,6 @@
 import os
 import uuid
+from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify, send_from_directory
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, Document, Note
@@ -89,6 +90,7 @@ def save_progress(doc_id):
 
     doc.total_pages = total
     doc.last_page = page
+    doc.last_opened_at = datetime.now(timezone.utc)
     db.session.commit()
     return jsonify({"document": doc.to_dict()})
 def get_owned_doc(doc_id):
@@ -146,3 +148,22 @@ def delete_note(doc_id, note_id):
     db.session.delete(note)
     db.session.commit()
     return jsonify({"message": "Deleted"})
+
+@library_bp.route("/summary", methods=["GET"])
+@jwt_required()
+def summary():
+    user_id = int(get_jwt_identity())
+    notes_count = Note.query.filter_by(user_id=user_id).count()
+    rows = (
+        db.session.query(Note, Document)
+        .join(Document, Note.document_id == Document.id)
+        .filter(Note.user_id == user_id)
+        .order_by(Note.created_at.desc())
+        .limit(5)
+        .all()
+    )
+    recent = [
+        {"id": n.id, "body": n.body, "page": n.page, "doc_id": d.id, "doc_title": d.title}
+        for n, d in rows
+    ]
+    return jsonify({"notes_count": notes_count, "recent_notes": recent})
