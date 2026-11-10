@@ -3,7 +3,7 @@ import { api } from "./api";
 import AppShell from "./AppShell";
 import { FEATURES } from "./features";
 import { ICONS, SearchIcon, ArrowIcon } from "./Icons";
-import { loadData, saveData } from "./offline";
+import { loadData, saveData } from "./Offline.js";
 import { pickContinue, greeting } from "./helpers";
 
 export default function Home({ user, go, openDoc }) {

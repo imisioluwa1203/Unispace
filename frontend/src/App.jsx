@@ -3,7 +3,7 @@ import "./theme";
 import { useState, useEffect } from "react";
 import "./index.css";
 import { api, getToken, clearToken } from "./api";
-import { clearOffline, useOnline, loadData, saveData } from "./offline";
+import { clearOffline, useOnline, loadData, saveData } from "./Offline.js";
 import Floaters from "./Floaters";
 import Signup from "./Signup";
 import Login from "./Login";
@@ -11,6 +11,7 @@ import Home from "./Home.jsx";
 import Library from "./Library";
 import Profile from "./Profile";
 import Reader from "./Reader";
+import Calculator from "./Calculator";
 
 export default function App() {
   const [screen, setScreen] = useState("login");
@@ -75,6 +76,8 @@ export default function App() {
     screenView = <Home user={user} go={setScreen} openDoc={openDoc} />;
   } else if (screen === "library" && user) {
     screenView = <Library user={user} go={setScreen} openDoc={openDoc} />;
+  } else if (screen === "calculator" && user) {
+    screenView = <Calculator user={user} go={setScreen} />;
   } else if (screen === "reader" && currentDoc) {
     screenView = <Reader doc={currentDoc} onBack={() => setScreen(readerFrom)} />;
   } else if (screen === "profile" && user) {
@@ -82,6 +85,7 @@ export default function App() {
   } else {
     screenView = <Login onAuth={handleAuth} goSignup={() => setScreen("signup")} />;
   }
+
 
   return (
     <>

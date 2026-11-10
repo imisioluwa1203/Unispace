@@ -59,3 +59,5 @@ export const ICONS = {
   books: BooksIcon, users: UsersIcon, bell: BellIcon, calendar: CalendarIcon, calculator: CalculatorIcon,
   gamepad: GamepadIcon, wifi: WifiIcon, phone: PhoneIcon, wallet: WalletIcon,
 };
+export const XIcon = () => (<Svg><path d="M6 6l12 12M18 6L6 18" /></Svg>);
+export const BackspaceIcon = () => (<Svg><path d="M9 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-6-7z" /><path d="M13 10l4 4M17 10l-4 4" /></Svg>);

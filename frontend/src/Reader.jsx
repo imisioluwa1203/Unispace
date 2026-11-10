@@ -2,7 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { api, apiFile } from "./api";
-import { getCachedPdf, savePdfToCache, loadData, saveData, removeData, docKey } from "./offline";
+import { getCachedPdf, savePdfToCache, loadData, saveData, removeData, docKey } from "./Offline.js";
+import CalcPad from "./CalcPad";
+import { CalculatorIcon } from "./Icons";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
 
@@ -17,6 +19,7 @@ export default function Reader({ doc, onBack }) {
   const [notes, setNotes] = useState([]);
   const [noteText, setNoteText] = useState("");
   const [noteError, setNoteError] = useState("");
+  const [calcOpen, setCalcOpen] = useState(false);
   const wrapRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -156,50 +159,60 @@ export default function Reader({ doc, onBack }) {
         <canvas ref={canvasRef} style={{ display: pdf ? "block" : "none" }} />
       </div>
 
-      {pdf && (
-        <div className="card notes-card">
-          <h2>Notes on page {pageNum}</h2>
-          <form onSubmit={addNote}>
-            <textarea
-              rows={3}
-              maxLength={2000}
-              placeholder="Write a note for this page..."
-              value={noteText}
-              onChange={(e) => setNoteText(e.target.value)}
-            />
-            <button disabled={!noteText.trim()}>Add note</button>
-          </form>
-          {noteError && <div className="error">{noteError}</div>}
-          {pageNotes.length === 0 && <p className="muted">No notes on this page yet.</p>}
-          <ul className="doc-list">
-            {pageNotes.map((n) => (
-              <li key={n.id}>
-                <span className="note-text">{n.body}</span>
-                <button className="delete" onClick={() => removeNote(n.id)}>Delete</button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {pdf && (
+          <div className="card notes-card">
+            <h2>Notes on page {pageNum}</h2>
+            <form onSubmit={addNote}>
+              <textarea
+                rows={3}
+                maxLength={2000}
+                placeholder="Write a note for this page..."
+                value={noteText}
+                onChange={(e) => setNoteText(e.target.value)}
+              />
+              <button disabled={!noteText.trim()}>Add note</button>
+            </form>
+            {noteError && <div className="error">{noteError}</div>}
+            {pageNotes.length === 0 && <p className="muted">No notes on this page yet.</p>}
+            <ul className="doc-list">
+              {pageNotes.map((n) => (
+                <li key={n.id}>
+                  <span className="note-text">{n.body}</span>
+                  <button className="delete" onClick={() => removeNote(n.id)}>Delete</button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
       {pdf && (
-        <div className="reader-bar">
-          <button disabled={pageNum <= 1} onClick={() => setPageNum(pageNum - 1)}>◀</button>
-          <span>Page {pageNum} of {numPages}</span>
-          <button disabled={pageNum >= numPages} onClick={() => setPageNum(pageNum + 1)}>▶</button>
-          <form onSubmit={goTo}>
-            <input
-              type="number"
-              min="1"
-              max={numPages}
-              placeholder="Go to"
-              value={jump}
-              onChange={(e) => setJump(e.target.value)}
-            />
-            <button>Go</button>
-          </form>
+        <div className="dock">
+          <div className="reader-bar">
+            <button type="button" disabled={pageNum <= 1} onClick={() => setPageNum(pageNum - 1)}>◀</button>
+            <span>Page {pageNum} of {numPages}</span>
+            <button type="button" disabled={pageNum >= numPages} onClick={() => setPageNum(pageNum + 1)}>▶</button>
+            <form onSubmit={goTo}>
+              <input
+                type="number"
+                min="1"
+                max={numPages}
+                placeholder="Go to"
+                value={jump}
+                onChange={(e) => setJump(e.target.value)}
+              />
+              <button>Go</button>
+            </form>
+            <button type="button" className="calc-fab" onClick={() => setCalcOpen(!calcOpen)}
+              aria-label="Calculator" aria-expanded={calcOpen}>
+              <CalculatorIcon />
+            </button>
+          </div>
+          <div className="sheet" style={{ display: calcOpen ? "block" : "none" }} role="dialog" aria-label="Calculator">
+            <CalcPad compact onClose={() => setCalcOpen(false)} />
+          </div>
         </div>
       )}
     </div>
   );
 }
+

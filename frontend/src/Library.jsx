@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { api } from "./api";
 import AppShell from "./AppShell";
-import { loadData, saveData, removeData, hasCachedPdf, removeCachedPdf, docKey } from "./offline";
+import { loadData, saveData, removeData, hasCachedPdf, removeCachedPdf, docKey } from "./Offline.js";
 import { formatSize, pickContinue, pagesRead } from "./helpers";
 import { FileIcon, BooksIcon, PencilIcon, ChevronIcon, ArrowIcon, PlusIcon } from "./Icons";
 

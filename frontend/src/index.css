@@ -539,6 +539,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .danger-btn { background: var(--err-bg); color: var(--err-text); border: 1px solid var(--err-border); }
 .danger-btn:hover:not(:disabled) { transform: none; box-shadow: none; filter: brightness(1.15); }
 
+/* ---------- picture on the right side of the app pages (laptops) ---------- */
 .app-art { display: none; }
 @media (min-width: 961px) {
   .app-art {
@@ -551,3 +552,82 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   }
   .page { margin-left: clamp(16px, 9vw, 150px); }
 }
+
+/* ---------- calculator ---------- */
+.card + .card { margin-top: 14px; }
+.seg {
+  display: flex; gap: 6px; padding: 4px; margin-bottom: 14px; border-radius: 999px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+}
+.seg button { flex: 1; margin: 0; padding: 9px 6px; border-radius: 999px; background: none; color: var(--muted); font-size: 13px; }
+.seg button.on { background: var(--grad); color: #fff; }
+.seg button:hover:not(:disabled) { transform: none; box-shadow: none; }
+
+.calc-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.chip {
+  width: auto; margin: 0; padding: 5px 12px; border-radius: 999px; background: var(--glass);
+  border: 1px solid var(--glass-border); color: var(--muted); font-size: 12px; font-weight: 600;
+}
+.chip.on { background: #7c3aed; border-color: #7c3aed; color: #fff; }
+.chip:hover:not(:disabled), .x-btn:hover:not(:disabled) { transform: none; box-shadow: none; }
+.chip-spacer { flex: 1; }
+.x-btn { display: grid; place-items: center; width: 36px; height: 36px; margin: 0; padding: 0; border-radius: 50%; background: none; color: var(--muted); }
+.x-btn:hover:not(:disabled) { color: var(--text); }
+
+.calc-display {
+  min-height: 70px; margin-bottom: 10px; padding: 8px 14px; overflow: hidden; text-align: right;
+  border-radius: 14px; background: var(--field); border: 1px solid var(--glass-border);
+}
+.calc-expr { min-height: 20px; color: var(--muted); font-size: 14px; word-break: break-all; }
+.calc-big { font-size: 1.9rem; font-weight: 700; line-height: 1.3; overflow-x: auto; overflow-y: hidden; white-space: nowrap; scrollbar-width: none; }
+.calc-big::-webkit-scrollbar { display: none; }
+.calc-big.faint { color: var(--muted); }
+.calc-big.err { font-size: 1rem; color: var(--err-text); }
+
+.calc-keys { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.k {
+  height: 46px; margin: 0; padding: 0; border-radius: 12px; background: var(--glass);
+  border: 1px solid var(--glass-border); color: var(--text); font-size: 1.05rem; font-weight: 600;
+  display: grid; place-items: center;
+}
+.k.s { background: rgba(124, 58, 237, .18); color: var(--violet); font-size: .95rem; }
+.k.o { background: rgba(124, 58, 237, .32); }
+.k.e { background: var(--grad); color: #fff; border-color: transparent; }
+.k:hover:not(:disabled) { transform: none; box-shadow: none; filter: brightness(1.2); }
+.calc.compact .k { height: 38px; }
+.calc.compact .calc-display { min-height: 56px; padding: 6px 12px; }
+.calc.compact .calc-big { font-size: 1.5rem; }
+
+/* calculator sheet inside the reader */
+.dock { position: sticky; bottom: 12px; z-index: 30; display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.dock .reader-bar { position: static; margin-top: 0; }
+.reader-bar .calc-fab { display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border-radius: 50%; }
+.sheet {
+  max-height: 62vh; overflow-y: auto; padding: 12px; border-radius: 20px;
+  background: var(--glass-strong); border: 1px solid var(--violet);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: var(--shadow);
+}
+
+/* exam target and CGPA tools */
+.tool-note { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.num-field input, .num-field select { border-radius: 12px; }
+.grade-setting .check { font-size: 14px; }
+.grade-list { list-style: none; margin: 14px 0 0; padding: 0; border-top: 1px solid var(--glass-border); }
+.grade-list li { display: flex; align-items: center; gap: 12px; padding: 12px 2px; border-bottom: 1px solid var(--glass-border); }
+.grade-badge { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: var(--grad); color: #fff; font-weight: 800; }
+.grade-need { flex: 1; font-weight: 600; }
+.grade-need small { display: block; color: var(--muted); font-weight: 400; }
+.pill-no { color: var(--err-text); }
+.course-title { margin-top: 18px; }
+.course-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-top: 8px; }
+.course-row .num-field label { margin-top: 0; font-size: 12px; }
+.btn-ghost {
+  display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px;
+  background: var(--glass); border: 1px solid var(--glass-border); color: var(--text);
+}
+.btn-ghost:hover:not(:disabled) { transform: none; box-shadow: none; filter: brightness(1.15); }
+.result-card { margin-top: 14px; padding: 14px; border-radius: 16px; background: rgba(124, 58, 237, .18); border: 1px solid var(--violet); }
+.result-card strong { display: block; font-size: 1.7rem; }
+.small-line { margin: 8px 0 0; font-size: 13px; }
+.need-line { margin: 12px 0 0; font-weight: 600; }
